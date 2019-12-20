@@ -1,0 +1,10 @@
+.vscode/*
+*.json
+*.pyc
+__pycache__/
+.cache/*
+*.pdf
+*.txt
+data/*
+*.png
+*.svg
