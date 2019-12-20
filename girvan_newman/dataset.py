@@ -10,6 +10,7 @@ class GNDataset:
             graph {dict, key: int, value: List[int]} -- Adjancency list for graph
         """
         self.graph = graph
+        self._rdd_graph = None
         self.logger = logging.getLogger(__name__)
     
     @property
@@ -21,11 +22,12 @@ class GNDataset:
             sc {SparkContext} -- SparkContext
             rdd_graph {pyspark.RDD} -- RDD representation of graph
         """
-        conf = SparkConf().setMaster("local[*]").setAppName("Girvan-Newman algorithm")
-        sc = SparkContext.getOrCreate(conf)
-        # TODO, diff str -> int, set -> list
-        rdd_graph = sc.parallelize([[k, v] for k, v in self.graph.items()])
-        return rdd_graph
+        if not self._rdd_graph:
+            conf = SparkConf().setMaster("local[*]").setAppName("Girvan-Newman algorithm")
+            sc = SparkContext.getOrCreate(conf)
+            rdd_graph = sc.parallelize([[k, v] for k, v in self.graph.items()])
+            self._rdd_graph = rdd_graph
+        return self._rdd_graph
 
     def visualize(self):
         """Visualize the graph, BUT when the graph is TOO large, visualization could be a nightmare

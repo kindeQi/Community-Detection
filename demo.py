@@ -1,9 +1,7 @@
 from __future__ import division, print_function
-import pickle
 import pandas
-import ipdb
 from collections import defaultdict
-from girvan_newman import GNDataset
+from girvan_newman import GNDataset, GNModel
 
 
 def data_processing(input_file, num_common_prod_threshold):
@@ -20,7 +18,7 @@ def data_processing(input_file, num_common_prod_threshold):
         graph -- defaultdict[key: int, value: List[int]]
     """
     # Read input from csv file
-    video_csv = pandas.read_csv('./demo_datafile.csv')
+    video_csv = pandas.read_csv("./demo_datafile.csv")
     video_list = video_csv.to_numpy()[:, :-1].tolist()
     user_to_product = defaultdict(set)
     for user, prod, rating in video_list:
@@ -43,8 +41,12 @@ def data_processing(input_file, num_common_prod_threshold):
 
 if __name__ == "__main__":
     # Data processing
-    graph = data_processing('./demo_datafile.csv', 7)
-    gn_dataset = GNDataset(graph)
+    graph = data_processing("./demo_datafile.csv", 7)
+    gndataset = GNDataset(graph)
 
-    # Find the community 
-    
+    # Find the community
+    gnmodel = GNModel(gndataset)  # TODO, change api here, as using GNDataset
+    res = gnmodel.communities
+    import ipdb
+
+    ipdb.set_trace()
