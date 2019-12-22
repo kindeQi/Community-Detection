@@ -47,6 +47,7 @@ if __name__ == "__main__":
     # Find the community
     gnmodel = GNModel(gndataset)  # TODO, change api here, as using GNDataset
     res = gnmodel.communities
-    import ipdb
-
-    ipdb.set_trace()
+    res = [sorted(str(n) for n in c) for c in res]
+    res = sorted(res, key=lambda x: (len(x), x[0]))
+    for r in res:
+        print(r)
