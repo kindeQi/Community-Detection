@@ -15,7 +15,7 @@ Reference
     Girvan-newman algorithm: https://en.wikipedia.org/wiki/Girvan%E2%80%93Newman_algorithm
     Modularity: https://en.wikipedia.org/wiki/Modularity_(networks)
 """
-# TODO, theory about modularity, betweeness (weight and credit)
+# TODO, theory about modularity, betweeness (label and credit)
 # TODO, type check for user provided setting and data
 # if isinstance(data, list):
 #     raise TypeError('Input data can not be a list.')
@@ -46,7 +46,7 @@ class GNBetweenessNode:
         self.parents = []
         self.children = []
         self._credit = None
-        self._weight = None
+        self._label = None
 
     def add_parent(self, parent):
         self.parents.append(parent)
@@ -59,17 +59,17 @@ class GNBetweenessNode:
         return False if self.children else True
 
     @property
-    def weight(self):
+    def label(self):
         """
         Returns:
             int -- Number of shortest path that begin from root and end at this node
         """
-        if not self._weight:
+        if not self._label:
             if not self.parents:
-                self._weight = 1
+                self._label = 1
             else:
-                self._weight = sum(p.weight for p in self.parents)
-        return self._weight
+                self._label = sum(p.label for p in self.parents)
+        return self._label
 
     @property
     def credit(self):
@@ -83,7 +83,7 @@ class GNBetweenessNode:
             else:
                 self._credit = 1
                 for c in self.children:
-                    frac = self.weight / c.weight
+                    frac = self.label / c.label
                     self._credit += frac * c.credit
         return self._credit
 
@@ -111,7 +111,7 @@ class GNBetweenessGraph:
         Summary
             Get betweeness graph with a given root node
             One node could have multiple parents
-            Calculateing weight and credit for each node
+            Calculateing label and credit for each node
 
         Arguments:
             root {str} -- Value of root node
@@ -147,7 +147,7 @@ class GNBetweenessGraph:
             node = q.popleft()
             for child in node.children:
                 key = (min(node.val, child.val), max(node.val, child.val))
-                frac = node.weight / child.weight
+                frac = node.label / child.label
                 value = frac * child.credit
                 betweeness.append([key, value])
                 if child not in visited:
@@ -225,7 +225,9 @@ class GNModel:
         self.rdd_graph = gndataset.rdd.persist()
         self.dict_graph = self.rdd_graph.collectAsMap()
 
-    def highest_betweeness_edges(self, dict_graph):
+    def highest_betweeness_edges(self, dict_graph=None):
+        if dict_graph is None:
+            dict_graph = self.dict_graph
         gn_betweeness_graph = GNBetweenessGraph(dict_graph)
         res = (
             self.rdd_graph.flatMap(lambda x: gn_betweeness_graph.betweeness(x[0]))
@@ -255,6 +257,8 @@ class GNModel:
                 _communities = gn_modularity_graph.communities(cur_graph)
                 highest_modularity = cur_modularity
                 logger.info("Iter: {:>2}, Modularity: {:.4f}".format(iter, cur_modularity))
+            else:
+                logger.info("Iter: {:>2}, NOT highest modularity".format(iter))
             if highest_modularity - cur_modularity > self.modulairty_decrease_threshold:
                 logger.info("FINISH")
                 break
