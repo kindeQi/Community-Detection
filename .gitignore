@@ -3,6 +3,7 @@
 *.pyc
 __pycache__/
 .cache/*
+*/.cache/*
 *.pdf
 *.txt
 data/*
